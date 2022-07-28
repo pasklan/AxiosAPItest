@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loja de Games</title>
+  </head>
+  <body>
+    <hr />
+    <h4>Lista de Jogos</h4>
+    <ul id="games"></ul>
+    <hr />
+    <h4>Novo Jogo</h4>
+    <input type="text" name="title" id="title" placeholder="Titulo" />
+    <p></p>
+    <input type="text" name="year" id="year" placeholder="Ano" />
+    <p></p>
+    <input type="text" name="price" id="price" placeholder="Preço" />
+    <p></p>
+    <button type="button" onclick="createGame()">Salvar Jogo</button>
+    <p></p>
+    <hr />
+    <h4>Editar Jogo</h4>
+    <input type="hidden" name="idUpdate" id="idUpdate" />
+    <input
+      type="text"
+      name="titleUpdate"
+      id="titleUpdate"
+      placeholder="Titulo"
+    />
+    <p></p>
+    <input type="text" name="yearUpdate" id="yearUpdate" placeholder="Ano" />
+    <p></p>
+    <input
+      type="text"
+      name="priceUpdate"
+      id="priceUpdate"
+      placeholder="Preço"
+    />
+    <p></p>
+    <button type="button" onclick="updateGame()">Salvar Alterações</button>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <script>
+    async function createGame() {
+      const titleInput = document.getElementById("title");
+      const yearInput = document.getElementById("year");
+      const priceInput = document.getElementById("price");
+
+      const newGame = {
+        title: titleInput.value,
+        year: yearInput.value,
+        price: priceInput.value,
+      };
+      try {
+        const response = await axios.post(
+          "http://localhost:2222/game",
+          newGame
+        );
+        if (response.status === 200) {
+          alert("GAME CADASTRADO");
+          document.location.reload();
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    async function deleteGame(listItem) {
+      const id = listItem.getAttribute("data-id");
+      try {
+        const response = await axios.delete("http://localhost:2222/game/" + id);
+        if (response.status) {
+          alert("Jogo Apagado");
+          document.location.reload();
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    function loadForm(listItem) {
+      const id = listItem.getAttribute("data-id");
+      const title = listItem.getAttribute("data-title");
+      const year = listItem.getAttribute("data-year");
+      const price = listItem.getAttribute("data-price");
+
+      document.getElementById("idUpdate").value = id;
+      document.getElementById("titleUpdate").value = title;
+      document.getElementById("yearUpdate").value = year;
+      document.getElementById("priceUpdate").value = price;
+    }
+
+    async function updateGame() {
+      const idInput = document.getElementById("idUpdate");
+      const titleInput = document.getElementById("titleUpdate");
+      const yearInput = document.getElementById("yearUpdate");
+      const priceInput = document.getElementById("priceUpdate");
+
+      const updateGame = {
+        title: titleInput.value,
+        year: yearInput.value,
+        price: priceInput.value,
+      };
+      id = idInput.value;
+
+      try {
+        const response = await axios.put(
+          "http://localhost:2222/game/" + id,
+          updateGame
+        );
+        if (response.status === 200) {
+          alert("GAME Atualizado");
+          document.location.reload();
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    async function getGames() {
+      try {
+        const response = await axios.get("http://localhost:2222/games");
+        const games = response.data;
+        const list = document.getElementById("games");
+        games.forEach(game => {
+          const item = document.createElement("li");
+          item.setAttribute("data-id", game.id);
+          item.setAttribute("data-title", game.title);
+          item.setAttribute("data-year", game.year);
+          item.setAttribute("data-price", game.price);
+          item.innerHTML = game.id + " - " + game.title + " - " + game.price;
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.innerHTML = "Deletar";
+          deleteBtn.addEventListener("click", function () {
+            deleteGame(item);
+          });
+
+          const updateBtn = document.createElement("button");
+          updateBtn.innerHTML = "Atualizar Jogo";
+          updateBtn.addEventListener("click", function () {
+            loadForm(item);
+          });
+
+          list.appendChild(deleteBtn);
+          list.appendChild(updateBtn);
+          list.appendChild(item);
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    getGames();
+  </script>
+</html>
